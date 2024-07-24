@@ -6,3 +6,10 @@ services:
       dockerfile: Dockerfile
         ports:
       - "8080:8080"
+    networks:
+      - love-paws-network
+
+networks:
+  love-paws-network:
+    driver: bridge
+    
