@@ -1,0 +1,1 @@
+Rename `api_key_original.json` to `api_key.json` and provide your *OpenAI API key* there.
