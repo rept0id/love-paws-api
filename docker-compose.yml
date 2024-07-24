@@ -1,6 +1,7 @@
 version: '3'
 services:
   love_paws_api:
-    image: node:latest
-    working_dir: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     command: npm daemon
