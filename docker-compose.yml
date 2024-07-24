@@ -4,7 +4,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-        ports:
+    ports:
       - "8080:8080"
     networks:
       - love-paws-network
