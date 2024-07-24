@@ -8,7 +8,7 @@ const __filename = url.fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const port = 3000;
+const port = 8080;
 
 let aiApiKey;
 
@@ -133,7 +133,7 @@ const init = async () => {
         initMiddlewares();
         spawnRoutes();
 
-        app.listen(3000, () => {
+        app.listen(port, () => {
             console.log('Server is listening on port 3000');
         });
     } catch (error) {
