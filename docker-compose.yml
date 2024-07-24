@@ -1,5 +1,7 @@
 version: '3'
+
 services:
+
   love_paws_api:
     build:
       context: .
@@ -10,6 +12,7 @@ services:
       - love-paws-network
 
 networks:
+
   love-paws-network:
     driver: bridge
     
