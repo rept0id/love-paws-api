@@ -3,6 +3,8 @@ import fetch from 'node-fetch';
 import fs from 'fs/promises';
 import path from 'path';
 import url from 'url';
+import cors from 'cors';
+import rateLimit from 'express-rate-limit';
 
 const __filename = url.fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -49,7 +51,19 @@ const initAiApiKey = async () => {
 /*** * Middlewares * ***/
 
 const initMiddlewares = () => {
+    // JSON
     app.use(express.json());
+
+    // CORS
+    app.use(cors());
+
+    // Rate Limit
+    const rateLimitObj = rateLimit({
+        windowMs: 1000 * 60 * 1 * 60 * 24, // 1 day
+        max: 100,
+        message: 'Too many requests from this IP, please try again later.'
+    }); // max. 100 requests / per day / (per IP)
+    app.use(rateLimitObj);
 }
 
 /*** * Routes * ***/
