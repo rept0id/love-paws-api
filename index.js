@@ -57,7 +57,11 @@ const initMiddlewares = () => {
     // CORS
     app.use(cors());
 
-    // Rate Limit
+    /*** * Rate Limit * ***/
+    // Trust Proxy
+    // We assume that there is another top-level proxy that exposes data and handles HTTPS.
+    app.set('trust proxy', true);
+    // Limit
     const rateLimitObj = rateLimit({
         windowMs: 1000 * 60 * 1 * 60 * 24, // 1 day
         max: 100,
