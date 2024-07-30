@@ -63,7 +63,7 @@ const initMiddlewares = () => {
     app.set('trust proxy', true);
     // Limit
     const rateLimitObj = rateLimit({
-        windowMs: 1000 * 60 * 1 * 60 * 24, // 1 day
+        windowMs: 1000 * 60 * 60 * 24, // 1 day
         max: 100,
         message: 'Too many requests from this IP, please try again later.'
     }); // max. 100 requests / per day / (per IP)
