@@ -8,15 +8,16 @@ import rateLimit from 'express-rate-limit';
 
 const __filename = url.fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const __rootname = path.resolve(__dirname, '..');
 
 const app = express();
 const port = 8080;
 
-let aiApiKey;
+let aiApiKey: string | undefined;
 
 /*** * Utils * ***/
 
-const utilRemoveSymbols = (str) => {
+const utilRemoveSymbols = (str: string): string => {
     /* 
      * Regex analysis :
      * 
@@ -29,19 +30,19 @@ const utilRemoveSymbols = (str) => {
      * g: Global flag
      */
     // It is a design decision to use the global regex flag instead of replaceAll
-    return str.replace(/[^\p{L}\p{N}\s]/gu, '');
+    return str.replace(new RegExp("/[^\p{L}\p{N}\s]", "gu"), '');
 };
 
 /*** * AI API key * ***/
 
-const initAiApiKey = async () => {
+const initAiApiKey = async (): Promise<void> => {
     try {
-        const p = path.join(__dirname, 'conf', 'private', 'api_key', 'api_key.json');
+        const p = path.join(__rootname, 'conf', 'private', 'api_key', 'api_key.json');
     
-        const d = await fs.readFile(p, 'utf8');
-        const dJson = JSON.parse(d);
+        const v = await fs.readFile(p, 'utf8');
+        const vParsed = JSON.parse(v);
     
-        aiApiKey = dJson.api_key;
+        aiApiKey = vParsed.api_key;
     } catch (error) {
         console.error('Error reading or parsing the API key file:', error);
         process.exit(1);
@@ -50,7 +51,7 @@ const initAiApiKey = async () => {
 
 /*** * Middlewares * ***/
 
-const initMiddlewares = () => {
+const initMiddlewares = (): void => {
     // JSON
     app.use(express.json());
 
@@ -72,29 +73,44 @@ const initMiddlewares = () => {
 
 /*** * Routes * ***/
 
-const spawnRoutes = () => {
-    app.all('/', async (req, res) => {
-        res.json({"data":"Welcome to the Love Paws API"})
+const spawnRoutes = (): void => {
+    app.all('/', async (req: express.Request, res: express.Response) => {
+        res.json({"data":"Welcome to the Love Paws API"});
     });
 
-    app.all('/ping', async (req, res) => {
-        res.json({"data":"pong"})
+    app.all('/ping', async (req: express.Request, res: express.Response) => {
+        res.json({"data":"pong"});
     });
 
-    app.post('/inbox/send_message', async (req, res) => {
+    app.post('/inbox/send_message', async (req: express.Request, res: express.Response) => {
         try {
             /*** * Definitions * ***/
 
             // Definitions : Parameters
 
-            const p = {"data" : {}, "metadata" : {}};
+            type tParams = {
+                data: {
+                    recipient?: string;
+                    msg?: string;
+                };
+                metadata: Record<string, any>;
+            };
+            
+            const params: tParams = { data: {}, metadata: {} };
 
-            p.data.recipient = utilRemoveSymbols(req.body?.data?.recipient);
-            p.data.msg = utilRemoveSymbols(req.body?.data?.msg);
+            params.data.recipient = utilRemoveSymbols(req.body?.data?.recipient || '');
+            params.data.msg = utilRemoveSymbols(req.body?.data?.msg || '');
 
-            // Definitions : Result
+            // Definitions : Answer
 
-            const r = {"data" : {}, "metadata" : {}};
+            type tAns = { 
+                data: { 
+                    msg?: string 
+                }, 
+                metadata: any 
+            }
+
+            const ans: tAns = { data: {}, metadata: {} };
 
             /*** * AI Req * ***/
 
@@ -109,8 +125,8 @@ const spawnRoutes = () => {
                 body: JSON.stringify({
                     model: 'gpt-3.5-turbo',
                     messages: [
-                        { role: 'system', content: 'You are a cute cat named ' + p.data.recipient + ' that always refers to cat things and always asks questions back to maintain a conversation.' },
-                        { role: 'user', content: p.data.msg }
+                        { role: 'system', content: 'You are a cute cat named ' + params.data.recipient + ' that always refers to cat things and always asks questions back to maintain a conversation.' },
+                        { role: 'user', content: params.data.msg }
                     ],
                     temperature: 0.7
                 })
@@ -118,23 +134,38 @@ const spawnRoutes = () => {
 
             // AI Req : Execute
 
-            const aiReqRes = await aiReq.json();
+            interface iAiReqRes {
+                choices: {
+                    message: {
+                        content: string;
+                    };
+                }[];
+            }
+
+            const aiReqRes = await aiReq.json() as iAiReqRes;
 
             // AI Req : Parse
 
             // AI Req : Parse : Internal
 
-            const aiRes = {"data" : {}, "metadata" : {}};
+            type tAiRes = { 
+                data: { 
+                    msg?: string 
+                }, 
+                metadata: any 
+            };
+
+            const aiRes: tAiRes = { data: {}, metadata: {} };
 
             aiRes.data.msg = aiReqRes?.choices[0]?.message?.content;
 
             // AI Req : Parse : External
 
-            r.data.msg = aiRes.data.msg;
+            ans.data.msg = aiRes.data.msg;
             
             /*** * Return * ***/
 
-            res.json(r);
+            res.json(ans);
         } catch (error) {
             console.error('Error:', error);
             res.status(500).json({ error: 'Internal Server Error' });
@@ -144,7 +175,7 @@ const spawnRoutes = () => {
 
 /*** * Init * ***/
 
-const init = async () => {
+const init = async (): Promise<void> => {
     try {
         await initAiApiKey();
 
@@ -152,7 +183,7 @@ const init = async () => {
         spawnRoutes();
 
         app.listen(port, () => {
-            console.log('Server is listening on port 3000');
+            console.log('Server is listening on port 8080');
         });
     } catch (error) {
         console.error('Error during initialization:', error);
@@ -162,7 +193,7 @@ const init = async () => {
 
 /*** * Main * ***/
 
-const main = () => {
+const main = (): void => {
     init();
 }
 

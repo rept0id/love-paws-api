@@ -89,7 +89,7 @@ out
 
 # Nuxt.js build / generate output
 .nuxt
-dist
+# dist # commented out due to TS usage (traditionally using /dist) and not Nuxt.js
 
 # Gatsby files
 .cache/
