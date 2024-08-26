@@ -2,7 +2,7 @@
 
 ## Setup 
 
-- Under `conf/api_key/`, rename `api_key_original.json` to `api_key.json` and provide your *OpenAI API key* there.
+- Under `conf/private/api_key/`, rename `api_key_original.json` to `api_key.json` and provide your *OpenAI API key* there.
 - Run `npm start daemon`
 
 ## Endpoints
